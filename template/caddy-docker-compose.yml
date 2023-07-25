@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+
+# vvv Add these settings to your Caddy docker-compose.yml vvv #
+    networks:
+      piped-net:
+        aliases:  # Optional but extremely helpful
+          - caddy # Optional but extremely helpful
+    ports:
+    - 80:80
+    - 443:443
+    volumes:
+      - piped-proxy:/var/run/ytproxy
+
+volumes:
+  piped-proxy:
+    external: true
+
+networks:
+    piped-net:
+      external: true
