@@ -1,4 +1,4 @@
-(global) {
+(piped-global) {
 	header {
 		# disable FLoC tracking
 		Permissions-Policy interest-cohort=()
@@ -16,17 +16,17 @@
 
 FRONTEND_HOSTNAME {
 	reverse_proxy pipedfrontend:80
-	import global
+	import piped-global
 }
 
 BACKEND_HOSTNAME {
-	reverse_proxy nginx:80
-	import global
+	reverse_proxy piped-nginx:80
+	import piped-global
 }
 
 PROXY_HOSTNAME {
 	@ytproxy path /videoplayback* /api/v4/* /api/manifest/*
-	import global
+	import piped-global
 
 	route {
 		header @ytproxy {
