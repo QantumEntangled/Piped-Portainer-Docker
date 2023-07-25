@@ -1,0 +1,72 @@
+version: "3.7"
+
+services:
+  pipedfrontend:
+    image: 1337kavin/piped-frontend:latest
+    restart: unless-stopped
+    networks:
+      piped-net:
+        aliases:
+          - pipedfrontend
+    depends_on:
+      - piped
+    entrypoint: ash -c 'sed -i s/pipedapi.kavin.rocks/pipedapi.farley.pro/g /usr/share/nginx/html/assets/* && /docker-entrypoint.sh && nginx -g "daemon off;"'
+        
+  piped-proxy:
+    image: 1337kavin/piped-proxy:latest
+    restart: unless-stopped
+    networks:
+      piped-net:
+        aliases:
+          - piped-proxy
+    environment:
+      - UDS=1
+    volumes:
+      - piped-proxy:/app/socket
+  
+  piped:
+    image: 1337kavin/piped:latest
+    restart: unless-stopped
+    networks:
+      piped-net:
+        aliases:
+          - piped
+    volumes:
+      - LOCAL_DIR/config/config.properties:/app/config.properties:ro
+    depends_on:
+      - postgres
+  
+  nginx:
+    image: nginx:mainline-alpine
+    restart: unless-stopped
+    networks:
+      piped-net:
+        aliases:
+          - piped-nginx
+    volumes:
+      - LOCAL_DIR/config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - LOCAL_DIR/config/pipedapi.conf:/etc/nginx/conf.d/pipedapi.conf:ro
+    depends_on:
+      - piped
+
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    networks:
+      piped-net:
+        aliases:
+          - piped-postgres
+    volumes:
+      - LOCAL_DIR/data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=piped
+      - POSTGRES_USER=piped
+      - POSTGRES_PASSWORD=POSTGRES_PASSWORD
+
+volumes:
+  piped-proxy:
+    external: true
+
+networks:
+  piped-net:
+    external: true
